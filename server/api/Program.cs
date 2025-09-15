@@ -1,15 +1,18 @@
+using api;
 using Infrastructure.Postgres.Scaffolding;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Register AppOptions from appsettings.json into the DI container
+var appOptions = builder.Services.AddAppOptions(builder.Configuration);
 
 // Add instanse of MyDbContext 
 builder.Services.AddDbContext<MyDbContext>(conf =>
 {
-    var conn = builder.Configuration["AppOptions:ConnectionString"];
-    conf.UseNpgsql(conn);
-    // conf.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL"));
+    conf.UseNpgsql(appOptions.DbConnectionString);
 });
 
 var app = builder.Build();
@@ -18,7 +21,10 @@ var app = builder.Build();
 app.MapGet("/", () => " API is running. Try /authors, /books, /genres or /swagger");
 
 // Endpoints
-app.MapGet("/authors", ([FromServices]MyDbContext dbContext) =>
+app.MapGet("/authors", (
+        [FromServices]IOptionsMonitor<AppOptions> optionMonitor,
+        [FromServices]MyDbContext dbContext) =>
+ 
     dbContext.Authors.ToList()
     );
 app.MapGet("/books", ([FromServices]MyDbContext dbContext) =>

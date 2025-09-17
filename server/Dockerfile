@@ -4,7 +4,7 @@ COPY ["./", "."]
 RUN dotnet publish "api/api.csproj" \
     -c Release \
     -o /app/publish \
-    --runtime linux-musl-arm64 \
+    --runtime linux-musl-x64 \
     --self-contained true \
     /p:PublishSingleFile=true
 
@@ -15,4 +15,3 @@ ENV ASPNETCORE_URLS=http://0.0.0.0:8080
 EXPOSE 8080
 
 ENTRYPOINT ["./api"]
-

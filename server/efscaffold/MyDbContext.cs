@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using efscaffold.Entities;
-//c# representation of the database 
+
 namespace Infrastructure.Postgres.Scaffolding;
 
 public partial class MyDbContext : DbContext

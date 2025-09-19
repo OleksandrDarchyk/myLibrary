@@ -1,4 +1,5 @@
 using api;
+using api.Services;
 using Infrastructure.Postgres.Scaffolding;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,12 @@ builder.Services.AddDbContext<MyDbContext>(conf =>
     conf.UseNpgsql(appOptions.DbConnectionString);
 });
 
+builder.Services.AddControllers(); //registers the controllers in the application with (DI)
+builder.Services.AddOpenApiDocument();
 builder.Services.AddCors(); 
+builder.Services.AddExceptionHandler<GlobalExeptionHendler>();
+builder.Services.AddProblemDetails();
+builder.Services.AddScoped<IBookService ,BookService>();
 
 var app = builder.Build();
 
@@ -26,35 +32,10 @@ app.UseCors(config => config.
     AllowAnyHeader().
     SetIsOriginAllowed(x => true));
 
+app.MapControllers();
 
-// Root endpoint
-// Root endpoint
-app.MapGet("/", ([FromServices]MyDbContext dbContext) =>
-{
-    var response = new
-    {
-        Description = "My Library API",
-        Title = "My Library API",
-        Id = Guid.NewGuid().ToString(),
-        Books = dbContext.Books.ToList()
-    };
-
-    return Results.Json(response);
-});
-
-
-// Endpoints
-app.MapGet("/authors", (
-        [FromServices]IOptionsMonitor<AppOptions> optionMonitor,
-        [FromServices]MyDbContext dbContext) =>
- 
-    dbContext.Authors.ToList()
-    );
-app.MapGet("/books", ([FromServices]MyDbContext dbContext) =>
-    dbContext.Books.ToList()
-);
-app.MapGet("/genres", ([FromServices]MyDbContext dbContext) =>
-    dbContext.Genres.ToList()
-);
+app.UseOpenApi();
+app.UseSwaggerUi();
+app.UseExceptionHandler();
 
 app.Run();
